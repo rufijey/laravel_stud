@@ -11,7 +11,7 @@
                 <input type="submit" value = "Delete" class="btn btn-primary">
             </form>
         </div>
-        <div ><a class="btn btn-primary" href="{{route('post.index')}}">Back</a></div>
+        <div ><a class="btn btn-primary" href="{{url()->previous() ?? route('post.index')}}">Back</a></div>
     </div>
 
 @endsection
