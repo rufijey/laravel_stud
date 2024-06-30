@@ -4,4 +4,7 @@
     @foreach($posts as $post)
         <div class="h5"><a class="link-dark" href="{{route('post.show',$post->id)}}">{{$post->id}} . {{$post->title}}</a></div>
     @endforeach
+    <div>
+        {{$posts->withQueryString()->links()}}
+    </div>
 @endsection

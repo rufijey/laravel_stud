@@ -2,17 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Filters\PostFilter;
+use App\Http\Requests\Post\FilterRequest;
+use App\Http\Requests\Post\StoreRequest;
+use App\Http\Requests\Post\UpdateRequest;
 use App\Models\Category;
 use App\Models\Post;
-use App\Models\PostTag;
 use App\Models\Tag;
-use Illuminate\Http\Request;
+use App\Services\PostService;
 
 class PostController extends Controller
 {
-    public function index()
+    public $service;
+
+    public function __construct(PostService $service)
     {
-        $posts = Post::all();
+        $this->service = $service;
+    }
+
+    public function index(FilterRequest $request)
+    {
+        $data = $request->validated();
+        $filter = app()->make(PostFilter::class, ['queryParams' => array_filter($data)]);
+        $posts = Post::filter($filter)->paginate(10);
         return view('post.index', compact('posts'));
 
     }
@@ -24,19 +36,10 @@ class PostController extends Controller
         return view('post.create', compact('categories', 'tags'));
     }
 
-    public function store()
+    public function store(StoreRequest $request)
     {
-        $data = request()->validate([
-            'title' => 'required|string',
-            'content' => 'required|string',
-            'image' => 'required|string',
-            'category_id' => '',
-            'tags' => ''
-        ]);
-        $tags = $data['tags'];
-        unset($data['tags']);
-        $post = Post::create($data);
-        $post->tags()->attach($tags);
+        $data = $request->validated();
+        $this->service->store($data);
         return redirect()->route('post.index');
     }
 
@@ -49,23 +52,13 @@ class PostController extends Controller
     {
         $categories = Category::all();
         $tags = Tag::all();
-        return view('post.edit', compact('post','categories','tags'));
-
+        return view('post.edit', compact('post', 'categories', 'tags'));
     }
 
-    public function update(Post $post)
+    public function update(Post $post, UpdateRequest $request)
     {
-        $data = request()->validate([
-            'title' => 'required|string',
-            'content' => 'required|string',
-            'image' => 'required|string',
-            'category_id' => '',
-            'tags' => ''
-        ]);
-        $tags = $data['tags'];
-        unset($data['tags']);
-        $post->update($data);
-        $post->tags()->sync($tags);
+        $data = $request->validated();
+        $this->service->update($post, $data);
         return redirect()->route('post.show', $post->id);
     }
 
