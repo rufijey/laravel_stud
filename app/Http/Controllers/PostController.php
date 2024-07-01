@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Services\PostService;
+use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
